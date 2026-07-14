@@ -1,0 +1,27 @@
+---
+- name: Cloud Infrastructure Automation
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+
+    - name: Show Project Name
+      debug:
+        msg: "Project: {{ project_name }}"
+
+    - name: Show Repository
+      debug:
+        msg: "Repository: {{ repo }}"
+
+    - name: Show Application Type
+      debug:
+        msg: "Application Type: {{ app_type }}"
+
+    - name: Show AWS Region
+      debug:
+        msg: "Region: {{ region }}"
+
+    - name: Show EC2 Instance
+      debug:
+        msg: "Instance: {{ instance }}"
