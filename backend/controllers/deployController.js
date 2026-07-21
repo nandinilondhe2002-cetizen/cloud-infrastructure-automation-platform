@@ -1,33 +1,32 @@
 const { runPlaybook } = require("../services/ansibleService");
 
 const deployApplication = async (req, res) => {
-
-  console.log("Deployment Request:");
-  console.log(req.body);
-
   try {
+    const deploymentData = req.body;
 
-    const output = await runPlaybook(req.body);
+    console.log("\n========== DEPLOYMENT REQUEST ==========");
+    console.log(deploymentData);
+    console.log("========================================\n");
+
+    const output = await runPlaybook(deploymentData);
 
     res.status(200).json({
       success: true,
-      message: "Deployment started successfully!",
-      ansibleOutput: output,
-      data: req.body,
+      message: "Deployment completed successfully!",
+      output,
     });
 
   } catch (error) {
 
-    console.error(error);
+    console.error("Deployment Error:", error);
 
     res.status(500).json({
       success: false,
-      message: "Ansible execution failed",
-      error: error.message,
+      message: "Deployment failed!",
+      error,
     });
 
   }
-
 };
 
 module.exports = {

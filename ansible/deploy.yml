@@ -1,27 +1,60 @@
 ---
-- name: Cloud Infrastructure Automation
-  hosts: localhost
-  connection: local
-  gather_facts: false
+- name: Deploy Cloud Infrastructure Automation Platform
+  hosts: web
+  become: yes
+  gather_facts: yes
+
+  vars:
+    app_dir: /opt/cloud-infrastructure-automation-platform
 
   tasks:
 
-    - name: Show Project Name
+    - name: Show deployment details
       debug:
-        msg: "Project: {{ project_name }}"
+        msg:
+          - "Project: {{ project_name }}"
+          - "Repository: {{ repo }}"
+          - "Application Type: {{ app_type }}"
+          - "Region: {{ region }}"
+          - "Instance: {{ instance }}"
 
-    - name: Show Repository
-      debug:
-        msg: "Repository: {{ repo }}"
+    - name: Update apt packages
+      apt:
+        update_cache: yes
 
-    - name: Show Application Type
-      debug:
-        msg: "Application Type: {{ app_type }}"
+    - name: Install required packages
+      apt:
+        name:
+          - git
+          - docker.io
+        state: present
 
-    - name: Show AWS Region
-      debug:
-        msg: "Region: {{ region }}"
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
 
-    - name: Show EC2 Instance
-      debug:
-        msg: "Instance: {{ instance }}"
+    - name: Remove old project directory
+      file:
+        path: "{{ app_dir }}"
+        state: absent
+
+    - name: Clone GitHub repository
+      git:
+        repo: "{{ repo }}"
+        dest: "{{ app_dir }}"
+        version: main
+
+    - name: Build Docker image
+      command: docker build -t ciap-app .
+      args:
+        chdir: "{{ app_dir }}/frontend"
+
+    - name: Stop existing container
+      command: docker rm -f ciap-container
+      ignore_errors: yes
+
+    - name: Run Docker container
+      command: docker run -d --name ciap-container -p 80:80 ciap-app
+      
